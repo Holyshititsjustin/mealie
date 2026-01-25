@@ -20,6 +20,9 @@ class RecipeResultCard(BaseModel):
     image_url: Annotated[str | None, Field(default=None, description="Recipe image URL")]
     description: Annotated[str | None, Field(default=None, description="Recipe description")]
     pinned: Annotated[bool, Field(default=False, description="Whether this day is pinned")]
+    expiring_ingredients_count: Annotated[
+        int, Field(default=0, description="Number of expiring pantry ingredients used in this recipe")
+    ]
 
     model_config = ConfigDict(from_attributes=True)
 

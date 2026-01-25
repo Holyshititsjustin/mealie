@@ -15,6 +15,7 @@ from mealie.db.models.household.household import Household
 from mealie.db.models.household.household_to_recipe import HouseholdToRecipe
 from mealie.db.models.household.invite_tokens import GroupInviteToken
 from mealie.db.models.household.mealplan import GroupMealPlan, GroupMealPlanRules
+from mealie.db.models.household.pantry import IngredientCatalogItem, PantryItem, PantryItemEvent
 from mealie.db.models.household.preferences import HouseholdPreferencesModel
 from mealie.db.models.household.recipe_action import GroupRecipeAction
 from mealie.db.models.household.shopping_list import (
@@ -58,6 +59,7 @@ from mealie.schema.household.group_shopping_list import (
 from mealie.schema.household.household import HouseholdInDB, HouseholdRecipeOut
 from mealie.schema.household.household_preferences import ReadHouseholdPreferences
 from mealie.schema.household.invite_token import ReadInviteToken
+from mealie.schema.household.pantry import IngredientCatalogItemOut, PantryItemEventOut, PantryItemOut
 from mealie.schema.household.webhook import ReadWebhook
 from mealie.schema.labels import MultiPurposeLabelOut
 from mealie.schema.meal_plan.new_meal import ReadPlanEntry
@@ -365,6 +367,37 @@ class AllRepositories:
     def group_multi_purpose_labels(self) -> GroupRepositoryGeneric[MultiPurposeLabelOut, MultiPurposeLabel]:
         return GroupRepositoryGeneric(
             self.session, PK_ID, MultiPurposeLabel, MultiPurposeLabelOut, group_id=self.group_id
+        )
+
+    # ================================================================
+    # Pantry
+
+    @cached_property
+    def pantry_items(self) -> HouseholdRepositoryGeneric[PantryItemOut, PantryItem]:
+        return HouseholdRepositoryGeneric(
+            self.session, PK_ID, PantryItem, PantryItemOut, group_id=self.group_id, household_id=self.household_id
+        )
+
+    @cached_property
+    def pantry_item_events(self) -> HouseholdRepositoryGeneric[PantryItemEventOut, PantryItemEvent]:
+        return HouseholdRepositoryGeneric(
+            self.session,
+            PK_ID,
+            PantryItemEvent,
+            PantryItemEventOut,
+            group_id=self.group_id,
+            household_id=self.household_id,
+        )
+
+    @cached_property
+    def ingredient_catalog_items(self) -> HouseholdRepositoryGeneric[IngredientCatalogItemOut, IngredientCatalogItem]:
+        return HouseholdRepositoryGeneric(
+            self.session,
+            PK_ID,
+            IngredientCatalogItem,
+            IngredientCatalogItemOut,
+            group_id=self.group_id,
+            household_id=self.household_id,
         )
 
     # ================================================================

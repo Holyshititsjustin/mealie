@@ -1,4 +1,4 @@
-from pydantic import UUID4, ConfigDict
+from pydantic import UUID4, ConfigDict, field_validator
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.interfaces import LoaderOption
 
@@ -18,6 +18,20 @@ class UpdateHouseholdPreferences(MealieModel):
     recipe_show_assets: bool = False
     recipe_landscape_view: bool = False
     recipe_disable_comments: bool = False
+
+    # Pantry Defaults
+    pantry_expiring_soon_window_days: int = 3
+    pantry_expired_window_days: int = 7
+    pantry_notifications_in_app: bool = True
+    pantry_notifications_email: bool = False
+    pantry_notifications_push: bool = False
+    pantry_digest_enabled: bool = False
+    pantry_digest_hour_utc: int = 12
+
+    @field_validator("pantry_expiring_soon_window_days", "pantry_expired_window_days")
+    @classmethod
+    def clamp_window(cls, value: int) -> int:
+        return max(0, min(30, value))
 
 
 class CreateHouseholdPreferences(UpdateHouseholdPreferences): ...

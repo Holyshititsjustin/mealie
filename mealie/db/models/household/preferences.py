@@ -32,6 +32,15 @@ class HouseholdPreferencesModel(SqlAlchemyBase, BaseMixins):
     recipe_landscape_view: Mapped[bool | None] = mapped_column(sa.Boolean, default=False)
     recipe_disable_comments: Mapped[bool | None] = mapped_column(sa.Boolean, default=False)
 
+    # Pantry Defaults
+    pantry_expiring_soon_window_days: Mapped[int | None] = mapped_column(sa.Integer, default=3)
+    pantry_expired_window_days: Mapped[int | None] = mapped_column(sa.Integer, default=7)
+    pantry_notifications_in_app: Mapped[bool | None] = mapped_column(sa.Boolean, default=True)
+    pantry_notifications_email: Mapped[bool | None] = mapped_column(sa.Boolean, default=False)
+    pantry_notifications_push: Mapped[bool | None] = mapped_column(sa.Boolean, default=False)
+    pantry_digest_enabled: Mapped[bool | None] = mapped_column(sa.Boolean, default=False)
+    pantry_digest_hour_utc: Mapped[int | None] = mapped_column(sa.Integer, default=12)
+
     # Deprecated
     recipe_disable_amount: Mapped[bool | None] = mapped_column(sa.Boolean, default=True)
 

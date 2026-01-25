@@ -23,6 +23,7 @@ if TYPE_CHECKING:
         GroupRecipeAction,
         GroupWebhooksModel,
         HouseholdPreferencesModel,
+        PantryItem,
     )
 
 
@@ -77,6 +78,8 @@ class Household(SqlAlchemyBase, BaseMixins):
     tools_on_hand: Mapped[list["Tool"]] = orm.relationship(
         "Tool", secondary=households_to_tools, back_populates="households_with_tool"
     )
+
+    pantry_items: Mapped[list["PantryItem"]] = orm.relationship("PantryItem", **COMMON_ARGS)
 
     model_config = ConfigDict(
         exclude={

@@ -4,13 +4,14 @@ This service orchestrates the entire randomization process:
 - Protein distribution across the week
 - Balance and variety rules
 - Shopping list consolidation
+- Expiring ingredient prioritization
 - Result caching
 """
 
 import random
 import re
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from pydantic import UUID4
@@ -49,6 +50,7 @@ class MealRandomizerService:
         self.group_id = group_id
         self.filter_service = RecipeFilterService(session, user_id, group_id)
         self._cache: dict[str, tuple[RandomizerResponse, datetime]] = {}
+        self._expiring_foods: set[UUID4] | None = None
 
     def generate_week_plan(
         self,
@@ -110,6 +112,11 @@ class MealRandomizerService:
         
         unassigned_days = [d for d in days if d not in pinned_recipes]
         
+        # Load expiring ingredients if requested
+        expiring_foods = None
+        if request.filters.include_expiring_ingredients:
+            expiring_foods = self._get_expiring_ingredient_foods()
+        
         # Step 3: Distribute proteins across unassigned days
         protein_queue = self._create_protein_queue(request.filters.protein_preferences, len(unassigned_days))
         
@@ -121,6 +128,8 @@ class MealRandomizerService:
                 candidates,
                 protein_needed,
                 existing_week_plan=week_plan,
+                expiring_foods=expiring_foods,
+                allow_backfill=request.filters.include_expiring_ingredients,
             )
             
             if not recipe:
@@ -144,6 +153,15 @@ class MealRandomizerService:
         
         for i, day in enumerate(days):
             recipe = week_plan[day]
+            
+            # Count expiring ingredients for this recipe
+            expiring_count = 0
+            if expiring_foods:
+                expiring_count = sum(
+                    1 for ingredient in (recipe.recipe_ingredient or [])
+                    if hasattr(ingredient, "food_id") and ingredient.food_id in expiring_foods
+                )
+            
             card = RecipeResultCard(
                 day=day,
                 date=(start_date + timedelta(days=i)).isoformat(),
@@ -156,6 +174,7 @@ class MealRandomizerService:
                 image_url=recipe.image if hasattr(recipe, "image") else None,
                 description=recipe.description if hasattr(recipe, "description") else None,
                 pinned=day in pinned_recipes,
+                expiring_ingredients_count=expiring_count,
             )
             recipe_cards.append(card)
         
@@ -251,9 +270,15 @@ class MealRandomizerService:
         candidates: list[RecipeModel],
         protein_type: str | None,
         existing_week_plan: dict[str, RecipeModel],
+        expiring_foods: set[UUID4] | None = None,
+        allow_backfill: bool = False,
     ) -> RecipeModel | None:
         """
         Select a recipe matching the protein type that hasn't been used yet.
+        
+        If expiring_foods is provided, prioritize recipes using expiring ingredients.
+        With allow_backfill=True, if no recipes with expiring ingredients are found,
+        fall back to non-expiring recipes.
         """
         used_recipe_ids = {recipe.id for recipe in existing_week_plan.values()}
         
@@ -264,10 +289,106 @@ class MealRandomizerService:
         else:
             available = [r for r in candidates if r.id not in used_recipe_ids]
         
+        if expiring_foods and available:
+            # Score recipes by expiring ingredient matches
+            scored_recipes = [
+                (recipe, self._score_recipe_for_expiring_ingredients(recipe, expiring_foods))
+                for recipe in available
+            ]
+            # Sort by score (descending), then by name for determinism
+            scored_recipes.sort(key=lambda x: (-x[1], x[0].name))
+            
+            # Return the highest-scoring recipe with expiring ingredients
+            top_recipe = scored_recipes[0][0]
+            top_score = scored_recipes[0][1]
+            
+            if top_score > 0 or not allow_backfill:
+                return top_recipe
+            
+            # If allow_backfill and no expiring matches, use any available
+            return top_recipe if available else None
+        
         if available:
             return random.choice(available)
         
         return None
+
+    def _score_recipe_for_expiring_ingredients(self, recipe: RecipeModel, expiring_foods: set[UUID4]) -> float:
+        """
+        Score a recipe based on how many expiring ingredients it uses.
+        
+        Scoring:
+        - Base: +10 points per unique expiring ingredient
+        - Variant: recipes with fewer total ingredients get a boost (fresher, simpler recipes)
+        
+        Returns a float score (0 if no expiring ingredients).
+        """
+        if not recipe.recipe_ingredient:
+            return 0.0
+        
+        expiring_count = 0
+        total_count = len(recipe.recipe_ingredient)
+        
+        for ingredient in recipe.recipe_ingredient:
+            if hasattr(ingredient, "food_id") and ingredient.food_id in expiring_foods:
+                expiring_count += 1
+        
+        if expiring_count == 0:
+            return 0.0
+        
+        # Base score: 10 points per expiring ingredient
+        score = expiring_count * 10.0
+        
+        # Bonus for simpler recipes (fewer ingredients)
+        # This encourages using recipes with higher proportion of expiring ingredients
+        simplicity_bonus = (1.0 / max(total_count, 1)) * 5.0
+        
+        return score + simplicity_bonus
+
+    def _get_expiring_ingredient_foods(self) -> set[UUID4]:
+        """
+        Fetch all food IDs from pantry items that are expiring soon.
+        
+        Uses household preferences to determine expiring window.
+        Returns a set of food_id UUIDs.
+        """
+        from mealie.db.models.household import Household
+        from mealie.db.models.household.pantry import PantryItem
+        from sqlalchemy import and_, select
+        
+        try:
+            # Get household via user
+            from mealie.db.models.users import User
+            user = self.session.get(User, self.user_id)
+            if not user or not user.household_id:
+                return set()
+            
+            # Get household preferences
+            household = self.session.get(Household, user.household_id)
+            if not household or not household.preferences:
+                window_days = 3  # default
+            else:
+                window_days = household.preferences.pantry_expiring_soon_window_days or 3
+            
+            # Query pantry items
+            now = datetime.now(tz=UTC)
+            cutoff = now + timedelta(days=window_days)
+            
+            stmt = select(PantryItem.food_id).filter(
+                and_(
+                    PantryItem.household_id == user.household_id,
+                    PantryItem.is_archived == False,
+                    PantryItem.quantity > 0,
+                    PantryItem.expires_at <= cutoff,
+                    PantryItem.expires_at >= now,
+                )
+            )
+            
+            results = self.session.execute(stmt).scalars().all()
+            return {food_id for food_id in results if food_id}
+        except Exception as e:
+            logger.warning(f"Failed to fetch expiring ingredients: {e}")
+            return set()
 
     def _select_any_unused_recipe(
         self,
