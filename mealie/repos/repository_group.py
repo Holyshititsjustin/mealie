@@ -39,12 +39,36 @@ class RepositoryGroup(RepositoryGeneric[GroupInDB, Group]):
         return [self.create(new_group) for new_group in data]
 
     def update(self, match_value: str | int | UUID4, new_data: UpdateGroup | dict) -> GroupInDB:
-        if isinstance(new_data, GroupBase):
-            new_data.slug = slugify(new_data.name)
-        else:
-            new_data["slug"] = slugify(new_data["name"])
+        # Ensure slug uniqueness on update without changing the provided name
+        # Behavior differs from create(): for updates we keep the name as-is
+        max_attempts = 10
 
-        return super().update(match_value, new_data)
+        if isinstance(new_data, GroupBase):
+            base_slug = slugify(new_data.name)
+            attempts = 0
+            while True:
+                try:
+                    # First try with the base slug, then append incremental suffixes
+                    new_data.slug = base_slug if attempts == 0 else f"{base_slug}-{attempts}"
+                    return super().update(match_value, new_data)
+                except IntegrityError:
+                    self.session.rollback()
+                    attempts += 1
+                    if attempts >= max_attempts:
+                        raise
+        else:
+            # dict path
+            base_slug = slugify(new_data["name"])  # type: ignore[index]
+            attempts = 0
+            while True:
+                try:
+                    new_data["slug"] = base_slug if attempts == 0 else f"{base_slug}-{attempts}"
+                    return super().update(match_value, new_data)
+                except IntegrityError:
+                    self.session.rollback()
+                    attempts += 1
+                    if attempts >= max_attempts:
+                        raise
 
     def update_many(self, data: Iterable[UpdateGroup | dict]) -> list[GroupInDB]:
         # since update uses special logic for resolving slugs, we don't want to use the standard update_many method

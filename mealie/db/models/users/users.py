@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from ..household.mealplan import GroupMealPlan
     from ..household.shopping_list import ShoppingList
     from ..recipe import RecipeComment, RecipeModel, RecipeTimelineEvent
+    from ..meal_randomizer import RandomizerPreferences, RandomizerTemplate, RecipeRating
     from .password_reset import PasswordResetModel
 
 
@@ -84,10 +85,10 @@ class User(SqlAlchemyBase, BaseMixins):
     comments: Mapped[list["RecipeComment"]] = orm.relationship("RecipeComment", **sp_args)
     recipe_timeline_events: Mapped[list["RecipeTimelineEvent"]] = orm.relationship("RecipeTimelineEvent", **sp_args)
     password_reset_tokens: Mapped[list["PasswordResetModel"]] = orm.relationship("PasswordResetModel", **sp_args)
-
-    owned_recipes_id: Mapped[GUID | None] = mapped_column(GUID, ForeignKey("recipes.id"))
-    owned_recipes: Mapped[Optional["RecipeModel"]] = orm.relationship(
-        "RecipeModel", single_parent=True, foreign_keys=[owned_recipes_id]
+    recipe_ratings: Mapped[list["RecipeRating"]] = orm.relationship("RecipeRating", **sp_args)
+    randomizer_templates: Mapped[list["RandomizerTemplate"]] = orm.relationship("RandomizerTemplate", **sp_args)
+    randomizer_preferences: Mapped[Optional["RandomizerPreferences"]] = orm.relationship(
+        "RandomizerPreferences", **sp_args, uselist=False
     )
     mealplans: Mapped[Optional["GroupMealPlan"]] = orm.relationship(
         "GroupMealPlan", order_by="GroupMealPlan.date", **sp_args
