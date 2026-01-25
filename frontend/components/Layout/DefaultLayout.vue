@@ -251,6 +251,12 @@ export default defineNuxtComponent({
         restricted: true,
       },
       {
+        icon: $globals.icons.organizers,
+        title: i18n.t("pantry.pantry"),
+        to: "/household/pantry",
+        restricted: true,
+      },
+      {
         icon: $globals.icons.timelineText,
         title: i18n.t("recipe.timeline"),
         to: `/g/${groupSlug.value}/recipes/timeline`,

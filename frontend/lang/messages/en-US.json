@@ -83,6 +83,12 @@
     "recipe-events": "Recipe Events",
     "label-events": "Label Events"
   },
+  "pantry": {
+    "pantry": "Pantry",
+    "items": "Items",
+    "expiring": "Expiring Soon",
+    "history": "History"
+  },
   "general": {
     "add": "Add",
     "cancel": "Cancel",
