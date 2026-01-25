@@ -245,6 +245,12 @@ export default defineNuxtComponent({
         restricted: true,
       },
       {
+        icon: $globals.icons.search,
+        title: i18n.t("meal-randomizer.title"),
+        to: "/household/mealplan/randomizer",
+        restricted: true,
+      },
+      {
         icon: $globals.icons.formatListCheck,
         title: i18n.t("shopping-list.shopping-lists"),
         to: "/shopping-lists",
