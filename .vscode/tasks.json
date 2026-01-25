@@ -1,57 +1,113 @@
 {
-  "version": "2.0.0",
-  "tasks": [
-    {
-      "label": "Production: Build and Start Docker Compose",
-      "command": "task docker:prod",
-      "type": "shell",
-      "args": [],
-      "problemMatcher": [
-        "$tsc"
-      ],
-      "presentation": {
-        "reveal": "always"
-      },
-      "group": "test"
-    },
-    {
-      "label": "Dev: Start Backend",
-      "command": "task py",
-      "type": "shell",
-      "presentation": {
-        "reveal": "always",
-        "group": "groupA"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Dev: Start Frontend",
-      "command": "task ui",
-      "type": "shell",
-      "presentation": {
-        "reveal": "always",
-        "group": "groupA"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Dev: Start Docs Server",
-      "command": "task docs",
-      "type": "shell",
-      "presentation": {
-        "reveal": "always",
-        "group": "groupA"
-      },
-      "problemMatcher": []
-    },
-    {
-      "label": "Run python tests",
-      "command": "task py:test",
-      "type": "shell",
-      "presentation": {
-        "reveal": "always"
-      },
-      "problemMatcher": []
-    }
-  ]
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Production: Build and Start Docker Compose",
+			"command": "task docker:prod",
+			"type": "shell",
+			"args": [],
+			"problemMatcher": [
+				"$tsc"
+			],
+			"presentation": {
+				"reveal": "always"
+			},
+			"group": "test"
+		},
+		{
+			"label": "Dev: Start Backend",
+			"command": "task py",
+			"type": "shell",
+			"presentation": {
+				"reveal": "always",
+				"group": "groupA"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Dev: Start Frontend",
+			"command": "task ui",
+			"type": "shell",
+			"presentation": {
+				"reveal": "always",
+				"group": "groupA"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Dev: Start Docs Server",
+			"command": "task docs",
+			"type": "shell",
+			"presentation": {
+				"reveal": "always",
+				"group": "groupA"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Run python tests",
+			"command": "task py:test",
+			"type": "shell",
+			"presentation": {
+				"reveal": "always"
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "Verify: admin group update",
+			"type": "shell",
+			"command": "wsl -d Ubuntu -e bash -lc 'set -e; cd ~/mealie-wsl; export UV_LINK_MODE=copy; uv run pytest -k tests/integration_tests/admin_tests/test_admin_group_actions.py::test_admin_update_group -vv'",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Verify: admin group update (direct)",
+			"type": "shell",
+			"command": "wsl -d Ubuntu -e bash -lc 'set -e; cd ~/mealie-wsl; export UV_LINK_MODE=copy; uv run pytest tests/integration_tests/admin_tests/test_admin_group_actions.py::test_admin_update_group -vv'",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "WSL: Full Python tests",
+			"type": "shell",
+			"command": "wsl -d Ubuntu -e bash -lc 'set -e; cd ~/mealie-wsl; export UV_LINK_MODE=copy; task py:test -- -vv --durations=20'",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Verify single admin group test",
+			"type": "shell",
+			"command": "wsl -d Ubuntu -e bash -lc 'cd ~/mealie-wsl && export UV_LINK_MODE=copy && uv run pytest tests/integration_tests/admin_tests/test_admin_group_actions.py -k test_admin_update_group -vv'",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "WSL full suite after fix",
+			"type": "shell",
+			"command": "wsl -d Ubuntu -e bash -lc 'cd ~/mealie-wsl && export UV_LINK_MODE=copy && task py:test -- -vv --durations=20'",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "WSL full suite final",
+			"type": "shell",
+			"command": "wsl -d Ubuntu -e bash -lc 'cd ~/mealie-wsl && export UV_LINK_MODE=copy && uv run pytest -vv --durations=20'",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		},
+		{
+			"label": "Verify single admin group test after sync",
+			"type": "shell",
+			"command": "wsl -d Ubuntu -e bash -lc 'cd ~/mealie-wsl && export UV_LINK_MODE=copy && uv run pytest tests/integration_tests/admin_tests/test_admin_group_actions.py -k test_admin_update_group -vv'",
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "test"
+		}
+	]
 }

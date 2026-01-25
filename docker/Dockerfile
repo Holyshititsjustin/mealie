@@ -147,7 +147,7 @@ HEALTHCHECK CMD python -m mealie.scripts.healthcheck || exit 1
 ENV HOST 0.0.0.0
 
 EXPOSE ${APP_PORT}
-COPY ./docker/entry.sh $MEALIE_HOME/run.sh
+COPY ./docker/entry.sh /app/run.sh
 
-RUN chmod +x $MEALIE_HOME/run.sh
+RUN chmod +x /app/run.sh
 ENTRYPOINT ["/app/run.sh"]

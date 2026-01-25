@@ -26,6 +26,7 @@ from mealie.db.models.household.shopping_list import (
 )
 from mealie.db.models.household.webhooks import GroupWebhooksModel
 from mealie.db.models.labels import MultiPurposeLabel
+from mealie.db.models.meal_randomizer import RandomizerPreferences, RandomizerTemplate, RecipeRating
 from mealie.db.models.recipe.category import Category
 from mealie.db.models.recipe.comment import RecipeComment
 from mealie.db.models.recipe.ingredient import IngredientFoodModel, IngredientUnitModel
@@ -61,6 +62,9 @@ from mealie.schema.household.webhook import ReadWebhook
 from mealie.schema.labels import MultiPurposeLabelOut
 from mealie.schema.meal_plan.new_meal import ReadPlanEntry
 from mealie.schema.meal_plan.plan_rules import PlanRulesOut
+from mealie.schema.meal_randomizer.preferences import RandomizerPreferencesOut
+from mealie.schema.meal_randomizer.rating import RecipeRatingOut
+from mealie.schema.meal_randomizer.template import RandomizerTemplateOut
 from mealie.schema.recipe import Recipe, RecipeCommentOut, RecipeToolOut
 from mealie.schema.recipe.recipe_category import CategoryOut, TagOut
 from mealie.schema.recipe.recipe_ingredient import IngredientFood, IngredientUnit
@@ -381,4 +385,25 @@ class AllRepositories:
     def webhooks(self) -> HouseholdRepositoryGeneric[ReadWebhook, GroupWebhooksModel]:
         return HouseholdRepositoryGeneric(
             self.session, PK_ID, GroupWebhooksModel, ReadWebhook, group_id=self.group_id, household_id=self.household_id
+        )
+
+    # ================================================================
+    # Meal Randomizer
+
+    @cached_property
+    def recipe_ratings(self) -> GroupRepositoryGeneric[RecipeRatingOut, RecipeRating]:
+        return GroupRepositoryGeneric(
+            self.session, PK_ID, RecipeRating, RecipeRatingOut, group_id=self.group_id
+        )
+
+    @cached_property
+    def randomizer_templates(self) -> GroupRepositoryGeneric[RandomizerTemplateOut, RandomizerTemplate]:
+        return GroupRepositoryGeneric(
+            self.session, PK_ID, RandomizerTemplate, RandomizerTemplateOut, group_id=self.group_id
+        )
+
+    @cached_property
+    def randomizer_preferences(self) -> GroupRepositoryGeneric[RandomizerPreferencesOut, RandomizerPreferences]:
+        return GroupRepositoryGeneric(
+            self.session, PK_ID, RandomizerPreferences, RandomizerPreferencesOut, group_id=self.group_id
         )

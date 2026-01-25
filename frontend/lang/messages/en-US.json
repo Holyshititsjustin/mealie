@@ -369,6 +369,9 @@
     "applies-on-days": "Applies on {0}s",
     "meal-plan-settings": "Meal Plan Settings"
   },
+  "meal-randomizer": {
+    "randomize-week": "Randomize Week"
+  },
   "migration": {
     "migration-data-removed": "Migration data removed",
     "new-migration": "New Migration",

@@ -52,11 +52,21 @@
           {{ $t('general.edit') }}
         </v-tab>
       </v-tabs>
-      <ButtonLink
-        :icon="$globals.icons.calendar"
-        :to="`/household/mealplan/settings`"
-        :text="$t('general.settings')"
-      />
+      <div class="d-flex align-center gap-2">
+        <v-btn
+          color="primary"
+          variant="outlined"
+          @click="randomizerOpen = true"
+        >
+          <v-icon start>{{ $globals.icons.diceMultiple }}</v-icon>
+          {{ $t('meal-randomizer.randomize-week') }}
+        </v-btn>
+        <ButtonLink
+          :icon="$globals.icons.calendar"
+          :to="`/household/mealplan/settings`"
+          :text="$t('general.settings')"
+        />
+      </div>
     </div>
 
     <div>
@@ -66,17 +76,29 @@
       />
     </div>
 
+    <MealRandomizer
+      v-model="randomizerOpen"
+      :start-date="weekRange.start"
+      :end-date="weekRange.end"
+      :meals-by-date="mealsByDate"
+      @applied="actions.refreshAll()"
+    />
+
     <v-row />
   </v-container>
 </template>
 
 <script lang="ts">
+import MealRandomizer from "~/components/MealRandomizer/MealRandomizer.vue";
 import { isSameDay, addDays, parseISO, format, isValid } from "date-fns";
 import { useHouseholdSelf } from "~/composables/use-households";
 import { useMealplans } from "~/composables/use-group-mealplan";
 import { useUserMealPlanPreferences } from "~/composables/use-users/preferences";
 
 export default defineNuxtComponent({
+  components: {
+    MealRandomizer,
+  },
   setup() {
     const route = useRoute();
     const router = useRouter();
@@ -156,6 +178,7 @@ export default defineNuxtComponent({
     }, { immediate: true });
 
     const { mealplans, actions } = useMealplans(weekRange);
+    const randomizerOpen = ref(false);
 
     function filterMealByDate(date: Date) {
       if (!mealplans.value) return [];
@@ -201,6 +224,7 @@ export default defineNuxtComponent({
       weekRange,
       firstDayOfWeek,
       numberOfDays,
+      randomizerOpen,
     };
   },
 });
