@@ -10,23 +10,37 @@
 
     <v-window v-model="tab">
       <v-window-item value="items">
-        <v-alert type="info" variant="tonal" class="mb-3">
-          Pantry UI scaffolded. API integration coming next.
-        </v-alert>
         <v-card>
-          <v-card-text>
-            <div class="text-caption mb-2">Connected: {{ about?.version ? 'Yes' : 'Unknown' }}</div>
+          <v-card-title class="d-flex align-center justify-space-between">
+            <span>{{ $t('pantry.items') }}</span>
             <div class="d-flex align-center gap-2">
-              <v-btn :to="'/shopping-lists'" color="primary" variant="elevated">
+              <v-btn color="primary" variant="elevated" @click="refreshItems">Refresh</v-btn>
+              <v-btn :to="'/shopping-lists'" color="secondary" variant="tonal">
                 {{ $t('shopping-list.shopping-lists') }}
               </v-btn>
             </div>
+          </v-card-title>
+          <v-card-text>
+            <v-data-table :items="items" :headers="headers" item-key="id">
+              <template #item.actions="{ item }">
+                <div class="d-flex align-center gap-2">
+                  <v-btn size="small" variant="tonal" @click="decrementItem(item, 1)">-1</v-btn>
+                  <v-btn size="small" color="success" variant="tonal" @click="consumeItem(item)">Consume</v-btn>
+                  <v-btn size="small" color="error" variant="tonal" @click="discardItem(item)">Discard</v-btn>
+                </div>
+              </template>
+            </v-data-table>
           </v-card-text>
         </v-card>
       </v-window-item>
 
       <v-window-item value="expiring">
-        <v-alert type="info" variant="tonal">Expiring items view will show soonest-expiring first.</v-alert>
+        <v-card>
+          <v-card-title>{{ $t('pantry.expiring') }}</v-card-title>
+          <v-card-text>
+            <v-data-table :items="expiring" :headers="headers" item-key="id" />
+          </v-card-text>
+        </v-card>
       </v-window-item>
 
       <v-window-item value="history">
@@ -37,15 +51,57 @@
 </template>
 
 <script lang="ts" setup>
-const tab = ref<'items' | 'expiring' | 'history'>('items');
+import { usePantry, type PantryItemOut } from '~/composables/use-pantry';
 
-const about = ref<{ version?: string } | null>(null);
-try {
-  const { data } = await useFetch('/api/app/about');
-  // @ts-expect-error runtime JSON
-  about.value = data.value as any;
+const tab = ref<'items' | 'expiring' | 'history'>('items');
+const headers = [
+  { title: 'Name', key: 'name' },
+  { title: 'Qty', key: 'quantity', align: 'end' },
+  { title: 'Unit', key: 'unit' },
+  { title: 'Expires', key: 'expiresAt' },
+  { title: 'Actions', key: 'actions', sortable: false },
+];
+
+const items = ref<PantryItemOut[]>([]);
+const expiring = ref<PantryItemOut[]>([]);
+
+const api = usePantry();
+
+async function refreshItems() {
+  const { data } = await api.listItems();
+  items.value = data ?? [];
 }
-catch (e) {
-  // ignore for scaffold
+
+async function refreshExpiring() {
+  const { data } = await api.getExpiring();
+  expiring.value = data ?? [];
 }
+
+async function decrementItem(item: PantryItemOut, amount: number) {
+  const { data } = await api.decrement(item.id, amount);
+  if (data) {
+    await refreshItems();
+    await refreshExpiring();
+  }
+}
+
+async function consumeItem(item: PantryItemOut) {
+  const { data } = await api.consume(item.id);
+  if (data) {
+    await refreshItems();
+    await refreshExpiring();
+  }
+}
+
+async function discardItem(item: PantryItemOut) {
+  const { data } = await api.discard(item.id);
+  if (data) {
+    await refreshItems();
+    await refreshExpiring();
+  }
+}
+
+onMounted(async () => {
+  await Promise.all([refreshItems(), refreshExpiring()]);
+});
 </script>
