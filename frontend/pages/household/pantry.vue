@@ -117,7 +117,7 @@
 import { usePantry, type PantryItemOut, type PantryItemCreate } from '~/composables/use-pantry';
 import { useUserApi } from '~/composables/api';
 import type { ShoppingListItemCreate } from '~/lib/api/types/household';
-import { useToast } from '~/composables/use-toast';
+import { alert } from '~/composables/use-toast';
 
 const tab = ref<'items' | 'expiring' | 'expired' | 'history'>('items');
 const headers = [
@@ -134,7 +134,6 @@ const expired = ref<PantryItemOut[]>([]);
 
 const api = usePantry();
 const userApi = useUserApi();
-const { pushInfo, pushError } = useToast();
 
 // Dialog state
 const createDialogOpen = ref(false);
@@ -182,15 +181,15 @@ async function saveItem() {
   try {
     if (editingItem.value) {
       await api.updateItem(editingItem.value.id, form.value);
-      pushInfo('Item updated');
+      alert.success('Item updated');
     } else {
       await api.createItem(form.value);
-      pushInfo('Item created');
+      alert.success('Item created');
     }
     createDialogOpen.value = false;
     await Promise.all([refreshItems(), refreshExpiring(), refreshExpired()]);
   } catch (error) {
-    pushError('Failed to save item');
+    alert.error('Failed to save item');
   }
 }
 
@@ -212,7 +211,7 @@ async function consumeAndAddToList() {
     // Get first shopping list (or create prompt to select one)
     const { data: lists } = await userApi.shopping.lists.getAll();
     if (!lists || lists.length === 0) {
-      pushError('No shopping lists found');
+      alert.error('No shopping lists found');
       return;
     }
     const listId = lists[0].id;
@@ -229,40 +228,40 @@ async function consumeAndAddToList() {
     await api.consume(consumingItem.value.id);
     consumeDialogOpen.value = false;
     consumingItem.value = null;
-    pushInfo('Item added to shopping list and marked consumed');
+    alert.success('Item added to shopping list and marked consumed');
     await Promise.all([refreshItems(), refreshExpiring(), refreshExpired()]);
   } catch (error) {
-    pushError('Failed to add to shopping list');
+    alert.error('Failed to add to shopping list');
   }
 }
 
 async function consumeItem(item: PantryItemOut) {
   try {
     await api.consume(item.id);
-    pushInfo('Item marked consumed');
+    alert.success('Item marked consumed');
     await Promise.all([refreshItems(), refreshExpiring(), refreshExpired()]);
   } catch (error) {
-    pushError('Failed to consume item');
+    alert.error('Failed to consume item');
   }
 }
 
 async function discardItem(item: PantryItemOut) {
   try {
     await api.discard(item.id);
-    pushInfo('Item discarded');
+    alert.success('Item discarded');
     await Promise.all([refreshItems(), refreshExpiring(), refreshExpired()]);
   } catch (error) {
-    pushError('Failed to discard item');
+    alert.error('Failed to discard item');
   }
 }
 
 async function deleteItem(id: string) {
   try {
     await api.deleteItem(id);
-    pushInfo('Item deleted');
+    alert.success('Item deleted');
     await Promise.all([refreshItems(), refreshExpiring(), refreshExpired()]);
   } catch (error) {
-    pushError('Failed to delete item');
+    alert.error('Failed to delete item');
   }
 }
 
