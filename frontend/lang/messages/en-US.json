@@ -378,7 +378,17 @@
   },
   "meal-randomizer": {
     "title": "Meal Randomizer",
-    "randomize-week": "Randomize Week"
+    "randomize-week": "Randomize Week",
+    "filters": "Filters",
+    "start-date": "Start Date",
+    "dietary-restrictions": "Dietary Restrictions",
+    "allergens": "Allergens",
+    "protein-preferences": "Protein Preferences",
+    "cook-time": "Cook Time",
+    "meal-types": "Meal Types",
+    "difficulty": "Difficulty",
+    "avoid-repeat-days": "Avoid Repeat Days",
+    "recipe-candidate-cap": "Recipe Candidate Cap"
   },
   "migration": {
     "migration-data-removed": "Migration data removed",
