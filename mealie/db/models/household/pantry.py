@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Optional
 
 import sqlalchemy as sa
 from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
-from sqlalchemy.orm import Mapped, mapped_column, orm
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from mealie.db.models._model_base import BaseMixins, SqlAlchemyBase
 from mealie.db.models._model_utils.auto_init import auto_init
@@ -27,9 +27,9 @@ class IngredientCatalogItem(SqlAlchemyBase, BaseMixins):
     default_shelf_life_days: Mapped[int | None] = mapped_column(sa.Integer)
 
     default_unit_id: Mapped[GUID | None] = mapped_column(GUID, sa.ForeignKey("ingredient_units.id"), index=True)
-    default_unit: Mapped[IngredientUnitModel | None] = orm.relationship(IngredientUnitModel, uselist=False)
+    default_unit: Mapped[IngredientUnitModel | None] = relationship(IngredientUnitModel, uselist=False)
 
-    pantry_items: Mapped[list["PantryItem"]] = orm.relationship("PantryItem", back_populates="catalog_item")
+    pantry_items: Mapped[list["PantryItem"]] = relationship("PantryItem", back_populates="catalog_item")
 
     @auto_init()
     def __init__(self, **_) -> None:
@@ -51,13 +51,13 @@ class PantryItem(SqlAlchemyBase, BaseMixins):
 
     quantity: Mapped[float] = mapped_column(sa.Float, default=1)
     unit_id: Mapped[GUID | None] = mapped_column(GUID, sa.ForeignKey("ingredient_units.id"), index=True)
-    unit: Mapped[IngredientUnitModel | None] = orm.relationship(IngredientUnitModel, uselist=False)
+    unit: Mapped[IngredientUnitModel | None] = relationship(IngredientUnitModel, uselist=False)
 
     food_id: Mapped[GUID | None] = mapped_column(GUID, sa.ForeignKey("ingredient_foods.id"), index=True)
-    food: Mapped[IngredientFoodModel | None] = orm.relationship(IngredientFoodModel, uselist=False)
+    food: Mapped[IngredientFoodModel | None] = relationship(IngredientFoodModel, uselist=False)
 
     catalog_item_id: Mapped[GUID | None] = mapped_column(GUID, sa.ForeignKey("ingredient_catalog_items.id"), index=True)
-    catalog_item: Mapped[Optional[IngredientCatalogItem]] = orm.relationship(
+    catalog_item: Mapped[Optional[IngredientCatalogItem]] = relationship(
         IngredientCatalogItem, back_populates="pantry_items"
     )
 
@@ -69,7 +69,7 @@ class PantryItem(SqlAlchemyBase, BaseMixins):
     depleted_at: Mapped[datetime | None] = mapped_column(sa.DateTime())
     is_archived: Mapped[bool] = mapped_column(sa.Boolean, default=False)
 
-    events: Mapped[list["PantryItemEvent"]] = orm.relationship(
+    events: Mapped[list["PantryItemEvent"]] = relationship(
         "PantryItemEvent", back_populates="pantry_item", cascade="all, delete-orphan"
     )
 
@@ -83,7 +83,7 @@ class PantryItemEvent(SqlAlchemyBase, BaseMixins):
 
     id: Mapped[GUID] = mapped_column(GUID, primary_key=True, default=GUID.generate)
     pantry_item_id: Mapped[GUID] = mapped_column(GUID, sa.ForeignKey("pantry_items.id"), index=True, nullable=False)
-    pantry_item: Mapped[PantryItem] = orm.relationship("PantryItem", back_populates="events")
+    pantry_item: Mapped[PantryItem] = relationship("PantryItem", back_populates="events")
 
     group_id: AssociationProxy[GUID] = association_proxy("pantry_item", "group_id")
     household_id: AssociationProxy[GUID] = association_proxy("pantry_item", "household_id")
