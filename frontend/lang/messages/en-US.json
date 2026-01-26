@@ -87,6 +87,7 @@
     "pantry": "Pantry",
     "items": "Items",
     "expiring": "Expiring Soon",
+    "expired": "Expired",
     "history": "History"
   },
   "general": {
