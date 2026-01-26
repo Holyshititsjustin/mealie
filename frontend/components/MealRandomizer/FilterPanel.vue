@@ -78,7 +78,9 @@
                   size="small"
                   @click="removeProtein(idx)"
                 >
-                  <v-icon size="small">{{ $globals.icons.delete }}</v-icon>
+                  <v-icon size="small">
+                    {{ $globals.icons.delete }}
+                  </v-icon>
                 </v-btn>
               </div>
             </v-col>
@@ -95,7 +97,9 @@
 
         <!-- Cook Time Bands -->
         <div class="mb-6">
-          <v-label class="mb-2">{{ $t('meal-randomizer.cook-time') }}</v-label>
+          <v-label class="mb-2">
+            {{ $t('meal-randomizer.cook-time') }}
+          </v-label>
           <v-chip-group
             v-model="localFilters.filters.cook_time_bands"
             multiple
