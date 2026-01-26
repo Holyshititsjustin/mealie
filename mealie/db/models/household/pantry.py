@@ -45,6 +45,7 @@ class PantryItem(SqlAlchemyBase, BaseMixins):
     id: Mapped[GUID] = mapped_column(GUID, primary_key=True, default=GUID.generate)
     group_id: Mapped[GUID] = mapped_column(GUID, sa.ForeignKey("groups.id"), nullable=False, index=True)
     household_id: Mapped[GUID] = mapped_column(GUID, sa.ForeignKey("households.id"), nullable=False, index=True)
+    household: Mapped["Household"] = relationship("Household", back_populates="pantry_items")
 
     name: Mapped[str] = mapped_column(sa.String, nullable=False, index=True)
     notes: Mapped[str | None] = mapped_column(sa.String)
