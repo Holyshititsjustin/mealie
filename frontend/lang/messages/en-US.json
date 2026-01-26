@@ -388,7 +388,11 @@
     "meal-types": "Meal Types",
     "difficulty": "Difficulty",
     "avoid-repeat-days": "Avoid Repeat Days",
-    "recipe-candidate-cap": "Recipe Candidate Cap"
+    "recipe-candidate-cap": "Recipe Candidate Cap",
+    "include-expiring-ingredients": "Include Expiring Ingredients",
+    "generate": "Generate",
+    "help-text": "Adjust filters and preferences, then generate a randomized meal plan.",
+    "ready-to-randomize": "Ready to randomize!"
   },
   "migration": {
     "migration-data-removed": "Migration data removed",
