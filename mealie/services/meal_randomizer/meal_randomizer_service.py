@@ -171,7 +171,7 @@ class MealRandomizerService:
                 cook_time_minutes=self._parse_cook_time(recipe.total_time if hasattr(recipe, "total_time") else None),
                 difficulty=self._extract_difficulty(recipe),
                 dietary_tags=[tag.name for tag in recipe.tags] if recipe.tags else [],
-                image_url=recipe.image if hasattr(recipe, "image") else None,
+                image_url=f"/api/media/recipes/{recipe.id}/images/original.webp" if recipe.image else None,
                 description=recipe.description if hasattr(recipe, "description") else None,
                 pinned=day in pinned_recipes,
                 expiring_ingredients_count=expiring_count,
