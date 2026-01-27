@@ -392,7 +392,13 @@
     "include-expiring-ingredients": "Include Expiring Ingredients",
     "generate": "Generate",
     "help-text": "Adjust filters and preferences, then generate a randomized meal plan.",
-    "ready-to-randomize": "Ready to randomize!"
+    "ready-to-randomize": "Ready to randomize!",
+    "meal-plan": "Meal Plan",
+    "shopping-list": "Shopping List",
+    "templates": "Templates",
+    "loaded-from-cache": "Loaded from cache",
+    "regenerate": "Regenerate",
+    "apply-to-meal-plan": "Apply to Meal Plan"
   },
   "migration": {
     "migration-data-removed": "Migration data removed",
