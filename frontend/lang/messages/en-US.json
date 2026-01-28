@@ -1,4 +1,12 @@
 {
+  "common": {
+    "add": "Add",
+    "back": "Back",
+    "view": "View",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete"
+  },
   "about": {
     "about": "About",
     "about-mealie": "About Mealie",
