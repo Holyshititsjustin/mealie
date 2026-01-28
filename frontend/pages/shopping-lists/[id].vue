@@ -211,6 +211,7 @@
                     @checked="saveListItem"
                     @save="saveListItem"
                     @delete="deleteListItem(item)"
+                    @add-to-pantry="addItemToPantry(item)"
                   />
                 </TransitionGroup>
               </VueDraggable>
@@ -258,6 +259,7 @@
                   @checked="saveListItem"
                   @save="saveListItem"
                   @delete="deleteListItem(item)"
+                  @add-to-pantry="addItemToPantry(item)"
                 />
               </div>
             </TransitionGroup>

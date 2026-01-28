@@ -1,5 +1,6 @@
 from typing import cast
 
+from datetime import UTC, datetime, timedelta
 from pydantic import UUID4
 
 from mealie.core.exceptions import UnexpectedNone
@@ -20,6 +21,7 @@ from mealie.schema.household.group_shopping_list import (
     ShoppingListOut,
     ShoppingListSave,
 )
+from mealie.schema.household.pantry import PantryItemCreate
 from mealie.schema.recipe.recipe import Recipe
 from mealie.schema.recipe.recipe_ingredient import (
     IngredientFood,
@@ -527,3 +529,28 @@ class ShoppingListService:
 
         self.repos.shopping_list_multi_purpose_labels.create_many(label_settings)
         return self.shopping_lists.get_one(new_list.id)
+
+    def add_item_to_pantry(self, shopping_item_id: UUID4) -> None:
+        """Convert a shopping list item to a pantry item"""
+        # Get the shopping list item
+        shopping_item = self.list_items.get_one(shopping_item_id)
+        
+        if not shopping_item:
+            raise UnexpectedNone()
+
+        # Create a pantry item with the same quantity, unit, and food
+        expires_at = datetime.now(tz=UTC) + timedelta(days=30)  # Default 30 days expiration
+        
+        pantry_item_create = PantryItemCreate(
+            name=shopping_item.display,
+            notes=shopping_item.note or "",
+            quantity=shopping_item.quantity,
+            unit_id=shopping_item.unit_id,
+            food_id=shopping_item.food_id,
+            expires_at=expires_at,
+            expiring_window_days=3,  # Default expiring window
+        )
+        
+        # Create the pantry item
+        self.repos.pantry_items.create(pantry_item_create)
+

@@ -152,6 +152,12 @@ class ShoppingListItemController(BaseCrudController):
     def delete_one(self, item_id: UUID4):
         return self.delete_many([item_id])
 
+    @item_router.post("/{item_id}/add-to-pantry", response_model=SuccessResponse)
+    def add_to_pantry(self, item_id: UUID4):
+        """Convert a checked shopping list item to a pantry item"""
+        self.service.add_item_to_pantry(item_id)
+        return SuccessResponse.respond()
+
 
 router = APIRouter(prefix="/households/shopping/lists", tags=["Households: Shopping Lists"])
 

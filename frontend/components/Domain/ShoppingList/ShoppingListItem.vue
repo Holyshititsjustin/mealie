@@ -105,6 +105,41 @@
             </v-list>
           </v-menu>
         </div>
+        <div
+          v-else
+          style="min-width: 72px"
+        >
+          <v-menu
+            offset-x
+            start
+            min-width="125px"
+          >
+            <template #activator="{ props }">
+              <v-btn
+                size="small"
+                variant="text"
+                icon
+                v-bind="props"
+              >
+                <v-icon>
+                  {{ $globals.icons.dotsVertical }}
+                </v-icon>
+              </v-btn>
+            </template>
+            <v-list density="compact">
+              <v-list-item
+                v-for="action in contextMenu"
+                :key="action.event"
+                density="compact"
+                @click="contextHandler(action.event)"
+              >
+                <v-list-item-title>
+                  {{ action.text }}
+                </v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-menu>
+        </div>
       </v-col>
     </v-row>
     <v-row
@@ -200,16 +235,28 @@ export default defineNuxtComponent({
     const itemLabelCols = ref<string>(props.modelValue.checked ? "auto" : "6");
     const isOffline = computed(() => useOnline().value === false);
 
-    const contextMenu: actions[] = [
-      {
-        text: i18n.t("general.edit") as string,
-        event: "edit",
-      },
-      {
-        text: i18n.t("general.delete") as string,
-        event: "delete",
-      },
-    ];
+    const contextMenu = computed<actions[]>(() => {
+      const menu: actions[] = [
+        {
+          text: i18n.t("general.edit") as string,
+          event: "edit",
+        },
+        {
+          text: i18n.t("general.delete") as string,
+          event: "delete",
+        },
+      ];
+      
+      // Add "add to pantry" option only when item is checked
+      if (listItem.value.checked) {
+        menu.push({
+          text: i18n.t("shopping-list.add-to-pantry") as string,
+          event: "add-to-pantry",
+        });
+      }
+      
+      return menu;
+    });
 
     // copy prop value so a refresh doesn't interrupt the user
     const localListItem = ref(Object.assign({}, props.modelValue));

@@ -23,6 +23,7 @@ const routes = {
   shoppingListItems: `${prefix}/households/shopping/items`,
   shoppingListItemsCreateBulk: `${prefix}/households/shopping/items/create-bulk`,
   shoppingListItemsId: (id: string) => `${prefix}/households/shopping/items/${id}`,
+  shoppingListItemsAddToPantry: (id: string) => `${prefix}/households/shopping/items/${id}/add-to-pantry`,
 };
 
 export class ShoppingListsApi extends BaseCRUDAPI<ShoppingListCreate, ShoppingListOut, ShoppingListUpdate> {
@@ -66,6 +67,10 @@ export class ShoppingListItemsApi extends BaseCRUDAPI<
     });
 
     return await this.requests.delete(routes.shoppingListItems + query);
+  }
+
+  async addToPantry(itemId: string) {
+    return await this.requests.post(routes.shoppingListItemsAddToPantry(itemId), {});
   }
 }
 

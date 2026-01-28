@@ -230,6 +230,24 @@ export function useShoppingListCrud(
     localLabels.value = shoppingList.value?.labelSettings;
   }
 
+  async function addItemToPantry(item: ShoppingListItemOut) {
+    if (!item.id) {
+      return;
+    }
+
+    try {
+      loadingCounter.value += 1;
+      await userApi.shopping.items.addToPantry(item.id);
+      useToast().success(t("shopping-list.add-to-pantry") + " - " + t("general.success"));
+      refresh();
+    } catch (error) {
+      useToast().error(t("general.error"));
+      console.error("Failed to add item to pantry:", error);
+    } finally {
+      loadingCounter.value -= 1;
+    }
+  }
+
   // Context menu actions
   const contextActions = {
     delete: "delete",
@@ -255,6 +273,7 @@ export function useShoppingListCrud(
     cancelLabelOrder,
     saveLabelOrder,
     toggleReorderLabelsDialog,
+    addItemToPantry,
     contextActions,
     contextMenu,
   };
