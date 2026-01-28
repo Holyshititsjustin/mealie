@@ -194,6 +194,7 @@
 <script lang="ts">
 import { defineNuxtComponent } from "#app";
 import type { ConsolidatedIngredient, SubstitutionSuggestion } from "~/lib/api/types/meal-randomizer";
+import { computed } from "vue";
 
 export default defineNuxtComponent({
   props: {
@@ -207,6 +208,8 @@ export default defineNuxtComponent({
     },
   },
   setup(props) {
+    const toast = useToast();
+    const { $axios } = useNuxtApp();
     const hasExpiryData = computed(() => {
       return Object.values(props.shoppingList).some((item) => item.expiry_date);
     });
@@ -247,9 +250,27 @@ export default defineNuxtComponent({
       );
     };
 
-    const addToShoppingList = () => {
-      // TODO: Integrate with meal planner shopping list
-      console.log("Adding to shopping list");
+    const addToShoppingList = async () => {
+      if (!props.shoppingList || Object.keys(props.shoppingList).length === 0) {
+        toast.error("No ingredients to add");
+        return;
+      }
+
+      try {
+        const items = Object.values(props.shoppingList).map((ingredient) => ({
+          shopping_list_id: "", // Will use default list
+          note: ingredient.name,
+          quantity: ingredient.quantity,
+          unit: ingredient.unit,
+          is_checked: false,
+        }));
+
+        await $axios.post("/api/households/shopping/items/create-bulk", items);
+        toast.success("Ingredients added to shopping list");
+      } catch (error) {
+        toast.error("Failed to add items to shopping list");
+        console.error(error);
+      }
     };
 
     return {
