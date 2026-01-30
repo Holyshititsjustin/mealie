@@ -194,7 +194,9 @@
 <script lang="ts">
 import { defineNuxtComponent } from "#app";
 import type { ConsolidatedIngredient, SubstitutionSuggestion } from "~/lib/api/types/meal-randomizer";
+import type { ShoppingListItemCreate } from "~/lib/api/types/household";
 import { computed } from "vue";
+import { useUserApi } from "~/composables/api";
 
 export default defineNuxtComponent({
   props: {
@@ -209,7 +211,7 @@ export default defineNuxtComponent({
   },
   setup(props) {
     const toast = useToast();
-    const { $axios } = useNuxtApp();
+    const userApi = useUserApi();
     const hasExpiryData = computed(() => {
       return Object.values(props.shoppingList).some((item) => item.expiry_date);
     });
@@ -257,15 +259,23 @@ export default defineNuxtComponent({
       }
 
       try {
-        const items = Object.values(props.shoppingList).map((ingredient) => ({
-          shopping_list_id: "", // Will use default list
+        const { data: lists } = await userApi.shopping.lists.getAll();
+        const listId = lists?.items?.[0]?.id;
+
+        if (!listId) {
+          toast.error("No shopping lists found");
+          return;
+        }
+
+        const items: ShoppingListItemCreate[] = Object.values(props.shoppingList).map((ingredient) => ({
+          shoppingListId: listId,
           note: ingredient.name,
           quantity: ingredient.quantity,
-          unit: ingredient.unit,
-          is_checked: false,
+          unit: ingredient.unit ? { name: ingredient.unit } : undefined,
+          checked: false,
         }));
 
-        await $axios.post("/api/households/shopping/items/create-bulk", items);
+        await userApi.shopping.items.createMany(items);
         toast.success("Ingredients added to shopping list");
       } catch (error) {
         toast.error("Failed to add items to shopping list");
